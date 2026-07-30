@@ -1,64 +1,66 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-type View = "map" | "ar" | "meet";
+type Zone = "A" | "B" | "C" | "D";
 
-const members = [
-  { name: "민지", initials: "MJ", color: "#b4ff45", x: 64, y: 29, distance: "186m", status: "이동 중", battery: 82 },
-  { name: "도윤", initials: "DY", color: "#c8b6ff", x: 31, y: 57, distance: "240m", status: "대기 중", battery: 47 },
-  { name: "나", initials: "나", color: "#ff9c77", x: 49, y: 76, distance: "현재 위치", status: "", battery: 94 },
-];
+const zones = {
+  A: { name: "민락수변공원", level: "혼잡", people: "3,420명", rate: "87%", color: "#ff6b5f", status: "입장 지연 예상", time: "18분" },
+  B: { name: "광안리 중앙", level: "보통", people: "2,180명", rate: "62%", color: "#ffb84e", status: "여유 공간 확인", time: "7분" },
+  C: { name: "남천 해변", level: "여유", people: "980명", rate: "31%", color: "#3fcf9c", status: "추천 구역", time: "바로 입장" },
+  D: { name: "호메르스 앞", level: "주의", people: "2,870명", rate: "74%", color: "#a579ff", status: "이동량 증가 중", time: "12분" },
+} as const;
 
 export default function Home() {
-  const [view, setView] = useState<View>("map");
-  const [sos, setSos] = useState(false);
-  const [meeting, setMeeting] = useState(false);
-  const [sharing, setSharing] = useState(true);
-  const active = useMemo(() => members[0], []);
+  const [selected, setSelected] = useState<Zone>("C");
+  const [time, setTime] = useState("오후 3:24");
+  const [alert, setAlert] = useState(false);
+  const zone = zones[selected];
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setTime(new Intl.DateTimeFormat("ko-KR", { hour: "numeric", minute: "2-digit", hour12: true }).format(new Date())), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   return (
-    <main className="app-shell">
-      <section className="phone">
-        <header className="topbar">
-          <button className="group-button" aria-label="그룹 선택"><span className="tiny-stack">●●●</span> Summer Beat 2026 <span>⌄</span></button>
-          <button className="profile" aria-label="내 프로필">나</button>
-        </header>
+    <main className="app">
+      <header className="topbar">
+        <div className="brand"><span className="brand-mark">◌</span><b>BEACH:ON</b><span>SMART GWANGALLI</span></div>
+        <div className="top-actions"><button className="weather">☀️ 27° <small>맑음</small></button><button className="profile" aria-label="내 프로필">김</button></div>
+      </header>
 
-        <div className="status-row">
-          <span className="live-dot" /> <strong>위치 공유 중</strong><span>·</span><span>12:48에 종료</span>
-          <button onClick={() => setSharing(!sharing)} className={sharing ? "share-toggle on" : "share-toggle"}>{sharing ? "ON" : "OFF"}</button>
-        </div>
+      <section className="hero">
+        <div><p className="eyebrow"><i /> AI LIVE MONITORING</p><h1>오늘의 광안리,<br /><em>어디가 가장 여유로울까요?</em></h1><p className="hero-copy">AI가 CCTV·센서·이동 데이터를 분석해<br />해변의 현재 혼잡도를 안내합니다.</p></div>
+        <div className="live-card"><span className="live-dot" /> <b>실시간 업데이트</b><time>{time} 기준</time><strong>6,942<span>명</span></strong><small>현재 해변 방문객 추정</small></div>
+      </section>
 
-        {view === "map" && <MapView onAR={() => setView("ar")} onMeet={() => setView("meet")} />}
-        {view === "ar" && <ArView active={active} onBack={() => setView("map")} />}
-        {view === "meet" && <MeetView confirmed={meeting} onConfirm={() => setMeeting(true)} onBack={() => setView("map")} />}
-
-        <section className="member-strip" aria-label="일행 상태">
-          {members.slice(0, 2).map((m) => <article key={m.name} className="member-card"><div className="avatar" style={{ background: m.color }}>{m.initials}</div><div><b>{m.name}</b><span>{m.status} · {m.distance}</span></div><span className="battery">▰ {m.battery}%</span></article>)}
+      <section className="content-grid">
+        <section className="map-panel">
+          <div className="panel-heading"><div><p className="eyebrow">LIVE BEACH MAP</p><h2>구역별 혼잡도</h2></div><button className="expand" aria-label="지도 확대">⛶</button></div>
+          <div className="beach-map" aria-label="광안리 해변 혼잡도 지도">
+            <div className="ocean"><span>광안대교</span><i /><i /><i /></div>
+            <div className="shoreline" />
+            <div className="map-label g1">광안리해수욕장</div><div className="map-label g2">금련산역</div><div className="map-label g3">민락수변공원</div>
+            {(Object.keys(zones) as Zone[]).map((key) => <button key={key} onClick={() => setSelected(key)} className={`zone zone-${key} ${selected === key ? "active" : ""}`} style={{ "--zone": zones[key].color } as React.CSSProperties} aria-label={`${zones[key].name} ${zones[key].level}`}><span>{key}</span><b>{zones[key].rate}</b></button>)}
+            <div className="you-are-here"><span /> 현재 위치</div>
+            <div className="map-credit">ⓘ AI 추정 혼잡도</div>
+          </div>
+          <div className="legend"><span><i className="green" /> 여유 0–40%</span><span><i className="yellow" /> 보통 41–70%</span><span><i className="purple" /> 주의 71–80%</span><span><i className="red" /> 혼잡 81%+</span></div>
         </section>
 
-        <nav className="bottom-nav" aria-label="주요 기능">
-          <button className={view === "map" ? "selected" : ""} onClick={() => setView("map")}><span>⌖</span>지도</button>
-          <button className={view === "ar" ? "selected" : ""} onClick={() => setView("ar")}><span>⌁</span>AR로 찾기</button>
-          <button className={view === "meet" ? "selected" : ""} onClick={() => setView("meet")}><span>✦</span>만남 장소</button>
-        </nav>
-        <button className="sos-button" onClick={() => setSos(true)} aria-label="SOS 긴급 알림">SOS</button>
-
-        {sos && <div className="modal-backdrop"><section className="sos-modal"><span className="warning">!</span><p>긴급 상황인가요?</p><h2>일행 전체에게 SOS를 보냅니다</h2><div className="sos-location">⌖ 현재 위치와 실시간 지도가 공유됩니다.</div><button className="send-sos" onClick={() => setSos(false)}>SOS 보내기</button><button className="cancel" onClick={() => setSos(false)}>취소</button></section></div>}
+        <aside className="insight-panel">
+          <p className="eyebrow">AI INSIGHT</p><h2>지금, 가장 편안한 선택</h2>
+          <div className="recommend"><div className="spark">✦</div><div><span>AI 추천 구역</span><h3>남천 해변 <b>Zone C</b></h3><p>현재 가장 여유로운 구역이에요.</p></div><strong>31<small>%</small></strong></div>
+          <div className="mini-stats"><article><span>도보 예상</span><b>8 <small>분</small></b><i>↗ 현재 위치 기준</i></article><article><span>1시간 후</span><b className="green-text">여유</b><i>↘ 혼잡도 유지 예상</i></article></div>
+          <button className="route-btn" onClick={() => setAlert(true)}>추천 경로 안내 받기 <span>→</span></button>
+        </aside>
       </section>
+
+      <section className="status-strip"><div className="section-title"><p className="eyebrow">ZONE STATUS</p><h2>해변 현황</h2></div><div className="zone-cards">{(Object.keys(zones) as Zone[]).map((key) => <button onClick={() => setSelected(key)} className={`status-card ${selected === key ? "selected" : ""}`} key={key}><span style={{ background: zones[key].color }}>ZONE {key}</span><b>{zones[key].name}</b><strong>{zones[key].level}</strong><small>{zones[key].people} · {zones[key].status}</small></button>)}</div></section>
+
+      <section className="selected-detail" style={{ "--accent": zone.color } as React.CSSProperties}><div className="detail-dot" /><div><p>ZONE {selected} · 실시간 현황</p><h2>{zone.name}은 현재 <em>{zone.level}</em> 상태예요</h2></div><div className="detail-metric"><b>{zone.people}</b><span>방문객 추정</span></div><div className="detail-metric"><b>{zone.time}</b><span>예상 대기</span></div><button onClick={() => setAlert(true)}>알림 설정</button></section>
+
+      {alert && <div className="modal-backdrop" role="dialog" aria-modal="true"><section className="modal"><button className="close" onClick={() => setAlert(false)} aria-label="닫기">×</button><span className="modal-icon">✓</span><p>알림이 설정되었습니다</p><h2>{zone.name}의 혼잡도가 바뀌면<br />바로 알려드릴게요.</h2><button onClick={() => setAlert(false)}>확인</button></section></div>}
     </main>
   );
-}
-
-function MapView({ onAR, onMeet }: { onAR: () => void; onMeet: () => void }) {
-  return <><section className="map"><div className="map-grid" /><span className="zone z1">MAIN STAGE</span><span className="zone z2">FOOD & DRINKS</span><span className="zone z3">ART MARKET</span><span className="path p1" /><span className="path p2" /><span className="path p3" />{members.map((m) => <div className="map-person" key={m.name} style={{ left: `${m.x}%`, top: `${m.y}%` }}><i style={{ background: m.color }}>{m.initials}</i><b>{m.name}</b></div>)}<div className="map-card"><span className="map-card-icon">⌖</span><div><strong>민지까지 186m</strong><p>약 3분 · 위치 정확도 높음</p></div><button onClick={onAR}>찾기</button></div></section><section className="quick-actions"><button onClick={onAR}><span>⌁</span><b>AR로 찾기</b><small>카메라로 방향 안내</small></button><button onClick={onMeet}><span>✦</span><b>만남 장소</b><small>중간 지점 추천</small></button></section></>;
-}
-
-function ArView({ active, onBack }: { active: typeof members[0]; onBack: () => void }) {
-  return <section className="ar-view"><div className="ar-noise" /><button className="back" onClick={onBack}>‹</button><span className="ar-live">● LIVE</span><div className="compass">W &nbsp; NW &nbsp; <b>N</b> &nbsp; NE &nbsp; E</div><div className="ar-arrow">↑</div><div className="ar-target"><div className="avatar" style={{ background: active.color }}>{active.initials}</div><b>민지는 이쪽이에요</b><strong>186m</strong><span>약 3분 거리 · 정확도 ±8m</span></div><p className="ar-tip">휴대폰을 들고 화살표 방향으로 이동하세요</p></section>;
-}
-
-function MeetView({ confirmed, onConfirm, onBack }: { confirmed: boolean; onConfirm: () => void; onBack: () => void }) {
-  return <section className="meet-view"><button className="text-back" onClick={onBack}>‹ 지도</button><p className="eyebrow">AI MEETING POINT</p><h1>모두에게 가장<br />가까운 곳이에요.</h1><div className="place-card"><div className="place-icon">⌂</div><div><span>추천 만남 장소</span><h2>2번 출입구 안내소</h2><p>메인 스테이지 오른쪽, 분수대 앞</p></div><b className="score">92<span>점</span></b></div><div className="arrival"><span>나 <b>4분</b></span><i /><span>민지 <b>3분</b></span><i /><span>도윤 <b>5분</b></span></div><div className="reason"><b>왜 이곳인가요?</b><p>모두의 이동 시간이 짧고, 밝은 안내소 앞이라 찾기 쉬워요.</p></div><button className={confirmed ? "confirmed" : "confirm-meet"} onClick={onConfirm}>{confirmed ? "✓ 만남 장소가 공유됐어요" : "여기로 만나요"}</button></section>;
 }
