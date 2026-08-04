@@ -10,6 +10,9 @@ const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
+// Miniflare's HTML proxy can corrupt Unicode Windows paths during local dev.
+// Keep the Cloudflare runtime for builds, but use Vite's native server locally.
+const useNativeLocalServer = process.env.LOCAL_SIMPLE_DEV === "true";
 
 const localBindingConfig = {
   main: "./worker/index.ts",
@@ -50,10 +53,10 @@ export default defineConfig(async () => {
     plugins: [
       vinext(),
       sites(),
-      cloudflare({
+      ...(!useNativeLocalServer ? [cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
         config: localBindingConfig,
-      }),
+      })] : []),
     ],
   };
 });
