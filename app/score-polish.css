@@ -1,0 +1,3 @@
+/* Give the score unit and recommendation label a clearer visual separation. */
+.score>span{margin-left:12px;font-weight:800}
+.score>span small{font-weight:800;letter-spacing:.08em}
