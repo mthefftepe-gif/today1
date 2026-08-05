@@ -1,0 +1,3 @@
+"use client";
+import { useEffect } from "react";
+export default function HeroDynamicName(){useEffect(()=>{const sync=()=>{const stat=document.querySelector<HTMLElement>(".hero-stat"),name=document.querySelector<HTMLElement>(".recommend-result h3")?.textContent;if(!stat||!name)return;let label=stat.querySelector<HTMLElement>(".hero-dynamic-name");if(!label){label=document.createElement("b");label.className="hero-dynamic-name";stat.querySelector("span")?.after(label)}if(label.textContent!==name)label.textContent=name};sync();const id=setInterval(sync,500);return()=>clearInterval(id)},[]);return null}
