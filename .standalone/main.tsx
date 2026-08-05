@@ -7,11 +7,9 @@ import "../app/live-weather.css";
 import "../app/score-polish.css";
 import "../app/realistic-map.css";
 import "../app/recommendation-copy.css";
-import "../app/leaflet-map.css";
-import LeafletMapBridge from "../app/leaflet-map-bridge";
 import "../app/score-guide.css";
 import ScoreGuideBridge from "../app/score-guide-bridge";
 import PriorityBridge from "../app/priority-bridge";
 import "../app/priority-bridge.css";
 
-createRoot(document.getElementById("root")!).render(<><Home /><PriorityBridge /><LeafletMapBridge /><ScoreGuideBridge /><DataSources /><LiveWeatherRibbon /></>);
+createRoot(document.getElementById("root")!).render(<><Home /><PriorityBridge /><ScoreGuideBridge /><DataSources /><LiveWeatherRibbon /></>);
