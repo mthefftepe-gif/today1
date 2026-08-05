@@ -26,6 +26,8 @@ const beaches: Beach[] = [
   { id: "song", name: "송정해수욕장", temp: 26, wave: .6, wind: 3.4, rain: 12, x: 90, y: 13, activity: { swimming: 82, family: 75, walking: 86, surfing: 96, photo: 82, sunset: 81, relaxation: 82, petWalking: 84 }, base: { safety: 82, comfort: 86, scenery: 85, accessibility: 76 }, note: "서핑과 한적한 산책을 즐기기 좋은 해변입니다." },
   { id: "dadae", name: "다대포해수욕장", temp: 26, wave: .5, wind: 3.2, rain: 15, x: 10, y: 90, activity: { swimming: 78, family: 79, walking: 91, surfing: 82, photo: 88, sunset: 97, relaxation: 92, petWalking: 86 }, base: { safety: 86, comfort: 91, scenery: 94, accessibility: 75 }, note: "넓은 모래사장과 노을을 여유롭게 즐길 수 있습니다." },
   { id: "songdo", name: "송도해수욕장", temp: 25, wave: .7, wind: 4.1, rain: 18, x: 29, y: 73, activity: { swimming: 70, family: 76, walking: 80, surfing: 77, photo: 89, sunset: 82, relaxation: 76, petWalking: 66 }, base: { safety: 76, comfort: 72, scenery: 90, accessibility: 88 }, note: "도심에서 가까운 해안 산책 코스가 있습니다." },
+  { id: "ilgw", name: "일광해수욕장", temp: 26, wave: .5, wind: 2.8, rain: 10, x: 84, y: 8, activity: { swimming: 84, family: 85, walking: 89, surfing: 78, photo: 86, sunset: 88, relaxation: 90, petWalking: 87 }, base: { safety: 89, comfort: 91, scenery: 88, accessibility: 72 }, note: "한적한 분위기에서 산책과 휴식을 즐기기 좋은 해변입니다." },
+  { id: "imn", name: "임랑해수욕장", temp: 26, wave: .6, wind: 3.0, rain: 11, x: 92, y: 4, activity: { swimming: 80, family: 78, walking: 85, surfing: 82, photo: 83, sunset: 86, relaxation: 84, petWalking: 88 }, base: { safety: 84, comfort: 87, scenery: 86, accessibility: 68 }, note: "조용한 해안 풍경과 반려동물 산책에 어울리는 해변입니다." },
 ];
 
 function scores(beach: Beach, activity: Activity): Record<Criterion, number> {
