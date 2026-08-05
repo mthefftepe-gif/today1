@@ -9,5 +9,7 @@ import "../app/realistic-map.css";
 import "../app/recommendation-copy.css";
 import "../app/leaflet-map.css";
 import LeafletMapBridge from "../app/leaflet-map-bridge";
+import "../app/score-guide.css";
+import ScoreGuideBridge from "../app/score-guide-bridge";
 
-createRoot(document.getElementById("root")!).render(<><Home /><LeafletMapBridge /><DataSources /><LiveWeatherRibbon /></>);
+createRoot(document.getElementById("root")!).render(<><Home /><LeafletMapBridge /><ScoreGuideBridge /><DataSources /><LiveWeatherRibbon /></>);
