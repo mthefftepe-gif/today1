@@ -12,6 +12,16 @@ if (!serviceKey || !serviceAccount) {
 
 const app = getApps().length ? getApps()[0] : initializeApp({ credential: cert(JSON.parse(serviceAccount)) });
 const db = getFirestore(app);
+const activityCriteria = {
+  swimming: { weatherSuitability: .15, marineSuitability: .30, safety: .25, activitySuitability: .15, comfort: .05, scenery: .05, accessibility: .05 },
+  family: { weatherSuitability: .10, marineSuitability: .15, safety: .25, activitySuitability: .10, comfort: .15, scenery: .05, accessibility: .20 },
+  walking: { weatherSuitability: .25, marineSuitability: .05, safety: .10, activitySuitability: .15, comfort: .20, scenery: .15, accessibility: .10 },
+  surfing: { weatherSuitability: .10, marineSuitability: .35, safety: .20, activitySuitability: .20, comfort: .05, scenery: .05, accessibility: .05 },
+  photo: { weatherSuitability: .15, marineSuitability: .05, safety: .05, activitySuitability: .15, comfort: .10, scenery: .40, accessibility: .10 },
+  sunset: { weatherSuitability: .15, marineSuitability: .05, safety: .05, activitySuitability: .15, comfort: .10, scenery: .40, accessibility: .10 },
+  relaxation: { weatherSuitability: .15, marineSuitability: .05, safety: .05, activitySuitability: .10, comfort: .30, scenery: .25, accessibility: .10 },
+  petWalking: { weatherSuitability: .20, marineSuitability: .05, safety: .10, activitySuitability: .15, comfort: .25, scenery: .10, accessibility: .15 },
+};
 const beaches = [
   ["hae", "해운대해수욕장", 35.1587, 129.1604],
   ["gwang", "광안리해수욕장", 35.1532, 129.1186],
@@ -61,6 +71,7 @@ function condition(pty) { return ({ "0": "맑음", "1": "비", "2": "비/눈", "
 
 const base = getBaseTime();
 try {
+  await Promise.all(Object.entries(activityCriteria).map(([activityId, weights]) => db.collection("activity_criteria").doc(activityId).set({ activityId, weights, version: 1, updatedAt: FieldValue.serverTimestamp() }, { merge: true })));
   await Promise.all(beaches.map(async ([beachId, nameKo, latitude, longitude]) => {
     const grid = toGrid(latitude, longitude);
     const [nowItems, forecastItems] = await Promise.all([kma("getUltraSrtNcst", grid, base), kma("getUltraSrtFcst", grid, base)]);
