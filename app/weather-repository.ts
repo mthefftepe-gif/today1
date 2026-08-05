@@ -17,3 +17,9 @@ export async function getLatestWeather(beachId: string) {
     .map((doc) => doc.data() as LatestWeather)
     .sort((a, b) => b.observedAt.toMillis() - a.observedAt.toMillis())[0];
 }
+
+/** Latest available record for every beach used by the recommendation engine. */
+export async function getLatestWeatherForBeaches(beachIds: string[]) {
+  const records = await Promise.all(beachIds.map(async beachId => [beachId, await getLatestWeather(beachId)] as const));
+  return Object.fromEntries(records.filter((entry): entry is [string, LatestWeather] => entry[1] !== null));
+}

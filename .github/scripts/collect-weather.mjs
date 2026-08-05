@@ -81,7 +81,7 @@ try {
     await db.collection("weather_history").doc(id).set({
       beachId, nameKo, latitude, longitude, observedAt,
       temperature: Number(now.T1H), feelsLike: Number(now.T1H), humidity: Number(now.REH),
-      precipitationProbability: null, precipitation: Number(now.RN1 ?? 0), windSpeed: Number(now.WSD), windDirection: Number(now.VEC),
+      precipitationProbability: Number(forecast.POP ?? 0), precipitation: Number(now.RN1 ?? 0), windSpeed: Number(now.WSD), windDirection: Number(now.VEC),
       weatherCondition: condition(now.PTY), waveHeight: 0.4, waterTemperature: 25,
       source: "KMA Open API", apiVersion: "VilageFcstInfoService_2.0", createdAt: FieldValue.serverTimestamp(), marineSource: "Demo Data",
     }, { merge: true });

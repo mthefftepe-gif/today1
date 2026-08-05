@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import Home from "../app/page";
 import { DataSources } from "../app/data-sources";
 import LiveWeatherRibbon from "../app/live-weather-ribbon";
+import RecommendationWeatherSync from "../app/recommendation-weather-sync";
 import "../app/globals.css";
 import "../app/live-weather.css";
 import "../app/score-polish.css";
@@ -18,4 +19,4 @@ import ScoreGuideBridge from "../app/score-guide-bridge";
 import PriorityBridge from "../app/priority-bridge";
 import "../app/priority-bridge.css";
 
-createRoot(document.getElementById("root")!).render(<><Home /><HeroDynamicName /><SelectedBeachSync /><PriorityBridge /><LeafletMapBridge /><ScoreGuideBridge /><DataSources /><LiveWeatherRibbon /></>);
+createRoot(document.getElementById("root")!).render(<><Home /><HeroDynamicName /><SelectedBeachSync /><PriorityBridge /><LeafletMapBridge /><ScoreGuideBridge /><RecommendationWeatherSync /><DataSources /><LiveWeatherRibbon /></>);

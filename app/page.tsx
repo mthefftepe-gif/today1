@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from "recharts";
+import { getRecommendationWeather } from "./recommendation-live-weather";
 
 type Activity = "swimming" | "family" | "walking" | "surfing" | "photo" | "sunset" | "relaxation" | "petWalking";
 type Criterion = "weatherSuitability" | "marineSuitability" | "safety" | "activitySuitability" | "comfort" | "scenery" | "accessibility";
@@ -41,7 +42,12 @@ const beaches: Beach[] = [
 ];
 
 function scores(beach: Beach, activity: Activity): Record<Criterion, number> {
-  return { weatherSuitability: Math.max(45, Math.min(100, 100 - beach.rain - Math.max(0, beach.temp - 29) * 3)), marineSuitability: Math.max(35, Math.round(100 - beach.wave * 25 - Math.max(0, beach.wind - 3) * 5)), safety: beach.base.safety, activitySuitability: beach.activity[activity], comfort: beach.base.comfort, scenery: beach.base.scenery, accessibility: beach.base.accessibility };
+  const live = getRecommendationWeather()[beach.id];
+  const temperature = Number.isFinite(live?.temperature) ? live!.temperature : beach.temp;
+  const windSpeed = Number.isFinite(live?.windSpeed) ? live!.windSpeed : beach.wind;
+  const precipitationProbability = Number.isFinite(live?.precipitationProbability) ? live!.precipitationProbability : beach.rain;
+  const waveHeight = Number.isFinite(live?.waveHeight) ? live!.waveHeight : beach.wave;
+  return { weatherSuitability: Math.max(45, Math.min(100, 100 - precipitationProbability - Math.max(0, temperature - 29) * 3)), marineSuitability: Math.max(35, Math.round(100 - waveHeight * 25 - Math.max(0, windSpeed - 3) * 5)), safety: beach.base.safety, activitySuitability: beach.activity[activity], comfort: beach.base.comfort, scenery: beach.base.scenery, accessibility: beach.base.accessibility };
 }
 function effectiveWeights(activity: Activity, priorities: Priority[]) {
   const adjusted = { ...weights[activity] };
@@ -63,7 +69,7 @@ function Analysis({ beach, activity, priorities = activePriorities, close }: { b
 
 export default function Home() {
   const [activity, setActivity] = useState<Activity>("walking"); const [priorityRevision, setPriorityRevision] = useState(0); const [selected, setSelected] = useState(beaches[1]); const [analysis, setAnalysis] = useState(false);
-  useEffect(() => { const update = () => setPriorityRevision(current => current + 1); window.addEventListener("recommendation-priorities-change", update); return () => window.removeEventListener("recommendation-priorities-change", update); }, []);
+  useEffect(() => { const update = () => setPriorityRevision(current => current + 1); window.addEventListener("recommendation-priorities-change", update); window.addEventListener("recommendation-weather-change", update); return () => { window.removeEventListener("recommendation-priorities-change", update); window.removeEventListener("recommendation-weather-change", update); }; }, []);
   const ranked = useMemo(() => [...beaches].sort((a, b) => result(b, activity).total - result(a, activity).total), [activity, priorityRevision]); const best = ranked[0];
   return <main><header className="nav"><a className="brand" href="#top"><span>⌁</span>오늘바다 <small>BUSAN</small></a><nav><a href="#map">추천지도</a><a href="#recommend">맞춤추천</a></nav></header><section className="hero" id="top"><div className="hero-copy"><p className="eyebrow">LIVE DATA · BUSAN</p><h1>오늘, 당신에게 가장<br/><em>좋은 바다는 어디인가요?</em></h1><p>7개 통일 기준과 이용 목적별 가중치로 추천합니다.</p><button className="primary" onClick={() => document.getElementById("recommend")?.scrollIntoView({ behavior: "smooth" })}>맞춤 추천 받기 →</button></div><div className="hero-orb"><div className="sun"/><div className="hero-stat"><span>부산 오늘의 추천</span><b>{result(best, activity).total}</b><p>{activities[activity]}에 맞춘 설명 가능한 추천</p></div></div></section><section className="section" id="recommend"><div className="section-head"><div><p className="kicker">PERSONAL PICK</p><h2>나의 목적에 맞는 바다</h2><p>목적에 따라 가중치만 달라지고, 평가 기준은 항상 같은 7개입니다.</p></div></div><div className="activity-grid purpose-grid">{(Object.keys(activities) as Activity[]).map((key) => <button key={key} className={activity === key ? "chosen" : ""} onClick={() => setActivity(key)}><span>◌</span>{activities[key]}<small>{activity === key ? "선택됨" : "선택"}</small></button>)}</div><div className="recommend-result"><p>당신을 위한 첫 번째 선택</p><div className="result-name"><span>01</span><h3>{best.name}</h3></div><strong>{result(best, activity).total}<small>점</small></strong><div className="reasons"><p>✓ {labels.activitySuitability} {scores(best, activity).activitySuitability}점</p><p>✓ {labels.safety} {scores(best, activity).safety}점</p><p>✓ {best.note}</p></div><button onClick={() => { setSelected(best); document.getElementById("map")?.scrollIntoView({ behavior: "smooth" }); }}>Beach Finder에서 위치 보기 →</button></div></section><section className="section map-section" id="map"><div className="section-head"><div><p className="kicker">BEACH FINDER</p><h2>추천 해변 비교</h2></div></div><div className="map-layout"><div className="map">{ranked.map((beach) => <button key={beach.id} className={`pin ${selected.id === beach.id ? "selected" : ""}`} style={{ left: `${beach.x}%`, top: `${beach.y}%` }} onClick={() => setSelected(beach)}><span>{result(beach, activity).total}</span><small>{beach.name.replace("해수욕장", "")}</small></button>)}</div><aside className="beach-detail"><p>선택한 해변</p><h3>{selected.name}</h3><div className="score"><strong>{result(selected, activity).total}</strong><span>점<br/><small>추천</small></span></div><p className="detail-note">{selected.note}</p><div className="metrics"><span>🌡️ <b>{selected.temp}°</b>기온</span><span>≋ <b>{selected.wave}m</b>파고</span><span>↝ <b>{selected.wind}m/s</b>바람</span></div><button className="ai-button" onClick={() => setAnalysis(true)}>✦ AI 분석 보기</button></aside></div></section>{analysis && <Analysis beach={selected} activity={activity} close={() => setAnalysis(false)}/>}</main>;
 }
