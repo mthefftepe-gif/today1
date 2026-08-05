@@ -1,4 +1,4 @@
-import { collection, getDocs, limit, orderBy, query, where, type Timestamp } from "firebase/firestore";
+import { collection, getDocs, query, where, type Timestamp } from "firebase/firestore";
 import { db } from "./firebase";
 
 export type LatestWeather = {
@@ -10,7 +10,10 @@ export type LatestWeather = {
 
 /** Reads only the latest server-collected record; the browser never calls KMA. */
 export async function getLatestWeather(beachId: string) {
-  const q = query(collection(db, "weather_history"), where("beachId", "==", beachId), orderBy("observedAt", "desc"), limit(1));
+  const q = query(collection(db, "weather_history"), where("beachId", "==", beachId));
   const snapshot = await getDocs(q);
-  return snapshot.empty ? null : snapshot.docs[0].data() as LatestWeather;
+  if (snapshot.empty) return null;
+  return snapshot.docs
+    .map((doc) => doc.data() as LatestWeather)
+    .sort((a, b) => b.observedAt.toMillis() - a.observedAt.toMillis())[0];
 }
