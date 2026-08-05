@@ -43,8 +43,11 @@ function dateText(d) { return d.toISOString().slice(0, 10).replaceAll("-", ""); 
 function hourText(d) { return `${String(d.getUTCHours()).padStart(2, "0")}00`; }
 
 async function kma(endpoint, grid, base) {
+  // The portal's "Encoding" key is already URL-encoded.  Passing it through
+  // URLSearchParams would encode its percent characters a second time and KMA
+  // rejects that request with HTTP 403.
   const url = new URL(`https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/${endpoint}`);
-  url.search = new URLSearchParams({ serviceKey, pageNo: "1", numOfRows: "1000", dataType: "JSON", base_date: dateText(base), base_time: hourText(base), nx: String(grid.nx), ny: String(grid.ny) });
+  url.search = `?serviceKey=${serviceKey}&pageNo=1&numOfRows=1000&dataType=JSON&base_date=${dateText(base)}&base_time=${hourText(base)}&nx=${grid.nx}&ny=${grid.ny}`;
   const response = await fetch(url, { headers: { "User-Agent": "today1-weather-collector/1.0", Accept: "application/json" } });
   if (!response.ok) throw new Error(`KMA request failed: ${response.status}`);
   const json = await response.json();
