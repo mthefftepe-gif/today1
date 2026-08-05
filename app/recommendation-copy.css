@@ -1,0 +1,2 @@
+/* Extra plain-language reasons on the compact recommendation card. */
+.recommend-result .reasons:after{content:"✓ 현재 기상 조건과 해양환경을 함께 반영했습니다.\A✓ 안전성·쾌적성·접근 편의성도 종합 평가했습니다.";display:block;margin-top:8px;color:#5a7375;font-size:11px;line-height:1.7;white-space:pre-line}
