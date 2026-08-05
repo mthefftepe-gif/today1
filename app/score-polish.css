@@ -1,3 +1,5 @@
-/* Give the score unit and recommendation label a clearer visual separation. */
-.score>span{margin-left:12px;font-weight:800}
-.score>span small{font-weight:800;letter-spacing:.08em}
+/* Keep the score, unit, and recommendation on one clean visual line. */
+.score{display:flex!important;flex-direction:row!important;align-items:baseline!important}
+.score>span{display:inline-block!important;margin-left:10px;color:#637784!important;font-size:15px!important;font-weight:800;line-height:1!important;white-space:nowrap}
+.score>span br{display:none}
+.score>span small{display:inline-block!important;margin-left:7px;border-radius:999px;background:#e5f7f0;padding:5px 8px;color:#147d70!important;font-size:10px!important;font-weight:800;letter-spacing:.06em;vertical-align:middle}
