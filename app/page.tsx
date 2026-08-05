@@ -36,7 +36,7 @@ function result(beach: Beach, activity: Activity) {
   const restricted = activity === "swimming" && (beach.wave >= 1 || beach.wind >= 10 || values.safety < 60);
   return { values, restricted, total: restricted ? Math.min(59, Math.round(raw)) : Math.round(raw) };
 }
-function details(key: Criterion, beach: Beach) { const map: Record<Criterion, string> = { weatherSuitability: `기온 ${beach.temp}℃ · 강수확률 ${beach.rain}% · 기상청 Open API`, marineSuitability: `파고 ${beach.wave}m · 풍속 ${beach.wind}m/s · 파고·수온은 시연용 해양 데이터`, safety: `파도 위험 낮음 · 강풍 없음 · 안전시설 운영 정보 확인`, activitySuitability: "선택 활동과 해변 고유 특성의 적합도", comfort: "혼잡도 · 소음 · 대기질 · 체감환경을 종합", scenery: "경관 기본점수 · 가시거리 · 일몰 조건을 종합", accessibility: "대중교통 · 주차 · 화장실 · 편의시설을 종합" }; return map[key]; }
+function details(key: Criterion, beach: Beach) { const map: Record<Criterion, string> = { weatherSuitability: `기온 ${beach.temp}℃ - 강수확률 ${beach.rain}% - 기상청 Open API`, marineSuitability: `파고 ${beach.wave}m - 풍속 ${beach.wind}m/s - 시연용 해양 데이터`, safety: "파도 위험 낮음 - 강풍 없음 - 안전시설 운영 정보", activitySuitability: "선택 활동 - 해변 고유 특성 적합도", comfort: "혼잡도 - 소음 - 대기질 - 체감환경", scenery: "경관 기본점수 - 가시거리 - 일몰 조건", accessibility: "대중교통 - 주차 - 화장실 - 편의시설" }; return map[key]; }
 
 function Analysis({ beach, activity, close }: { beach: Beach; activity: Activity; close: () => void }) {
   const data = result(beach, activity); const chart = criteria.map((key) => ({ subject: labels[key], value: data.values[key] }));

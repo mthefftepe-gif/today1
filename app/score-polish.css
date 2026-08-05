@@ -3,3 +3,5 @@
 .score>span{display:inline-block!important;margin-left:10px;color:#637784!important;font-size:15px!important;font-weight:800;line-height:1!important;white-space:nowrap}
 .score>span br{display:none}
 .score>span small{display:inline-block!important;margin-left:7px;border-radius:999px;background:#e5f7f0;padding:5px 8px;color:#147d70!important;font-size:10px!important;font-weight:800;letter-spacing:.06em;vertical-align:middle}
+.calc-table b small{display:block;margin-top:4px;color:#718892;font-size:9px;font-weight:500;line-height:1.5}
+.calc-table b small:before{content:": ";font-weight:800;color:#3d606d}
