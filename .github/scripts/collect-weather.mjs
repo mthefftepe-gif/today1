@@ -1,5 +1,6 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { appendFile } from "node:fs/promises";
 
 const serviceKey = process.env.KMA_SERVICE_KEY;
 const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -43,6 +44,7 @@ function indexed(items) { return Object.fromEntries(items.map(item => [item.cate
 function condition(pty) { return ({ "0": "맑음", "1": "비", "2": "비/눈", "3": "눈", "4": "소나기" })[String(pty)] ?? "정보없음"; }
 
 const base = kstBase();
+try {
 await Promise.all(beaches.map(async ([beachId, nameKo, latitude, longitude]) => {
   const grid = toGrid(latitude, longitude);
   const [nowItems, forecastItems] = await Promise.all([kma("getUltraSrtNcst", grid, base), kma("getUltraSrtFcst", grid, base)]);
@@ -58,3 +60,9 @@ await Promise.all(beaches.map(async ([beachId, nameKo, latitude, longitude]) => 
   }, { merge: true });
 }));
 console.log(`Stored weather for ${beaches.length} beaches at ${new Date().toISOString()}`);
+} catch (error) {
+  const message = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
+  console.error(`WEATHER_COLLECTION_ERROR\n${message}`);
+  if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, `## Weather collection failed\n\n\`\`\`\n${message}\n\`\`\`\n`);
+  throw error;
+}
