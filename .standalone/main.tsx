@@ -6,6 +6,7 @@ import "../app/globals.css";
 import "../app/live-weather.css";
 import "../app/score-polish.css";
 import "../app/realistic-map.css";
+import "../app/hero-beach-name.css";
 import "../app/recommendation-copy.css";
 import "../app/leaflet-map.css";
 import LeafletMapBridge from "../app/leaflet-map-bridge";
