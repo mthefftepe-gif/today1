@@ -3,7 +3,6 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /beaches/{beachId} { allow read: if true; allow write: if false; }
     match /weather_history/{recordId} { allow read: if true; allow write: if false; }
-    match /weather_latest/{beachId} { allow read: if true; allow write: if false; }
     match /activity_weights/{activityId} { allow read: if true; allow write: if false; }
     match /recommendation_history/{recordId} { allow create: if true; allow read: if false; }
     /* Existing application rules */

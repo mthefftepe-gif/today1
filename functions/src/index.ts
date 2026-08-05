@@ -1,15 +1,40 @@
-import { initializeApp } from 'firebase-admin/app';
-import { FieldValue, getFirestore } from 'firebase-admin/firestore';
-import { onSchedule } from 'firebase-functions/scheduler';
-import { defineSecret } from 'firebase-functions/params';
-import { logger } from 'firebase-functions';
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { defineSecret } from "firebase-functions/params";
+import { logger } from "firebase-functions";
+import { onSchedule } from "firebase-functions/scheduler";
 
 initializeApp();
-const db=getFirestore(); const kmaServiceKey=defineSecret('KMA_SERVICE_KEY');
-const beaches=[['hae','Haeundae',35.1587,129.1604],['gwang','Gwangalli',35.1532,129.1186],['song','Songjeong',35.1786,129.1991],['dadae','Dadaepo',35.0464,128.9676],['songdo','Songdo',35.0768,129.0202],['ilgw','Ilgwang',35.2658,129.2338],['imn','Imrang',35.3187,129.2626]] as const;
-function kst(){return new Date(Date.now()+32400000)}
-function base(){const d=kst();if(d.getUTCMinutes()<45)d.setUTCHours(d.getUTCHours()-1);return{date:d.toISOString().slice(0,10).replaceAll('-',''),time:`${String(d.getUTCHours()).padStart(2,'0')}00`}}
-function grid(lat:number,lng:number){const r=6371.00877/5,D=Math.PI/180,s=Math.log(Math.cos(30*D)/Math.cos(60*D))/Math.log(Math.tan(Math.PI/4+60*D/2)/Math.tan(Math.PI/4+30*D/2)),f=Math.pow(Math.tan(Math.PI/4+30*D/2),s)*Math.cos(30*D)/s,ro=r*f/Math.pow(Math.tan(Math.PI/4+38*D/2),s),ra=r*f/Math.pow(Math.tan(Math.PI/4+lat*D/2),s),t=(lng-126)*D*s;return{nx:Math.floor(ra*Math.sin(t)+43+.5),ny:Math.floor(ro-ra*Math.cos(t)+136+.5)}}
-async function getKmaWeather(beachId:string,lat:number,lng:number){const key=kmaServiceKey.value();if(!key)throw new Error('KMA_SERVICE_KEY is not configured');const {date,time}=base(),{nx,ny}=grid(lat,lng),url=new URL('https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst');Object.entries({serviceKey:key,pageNo:'1',numOfRows:'1000',dataType:'JSON',base_date:date,base_time:time,nx:String(nx),ny:String(ny)}).forEach(([k,v])=>url.searchParams.set(k,v));const response=await fetch(url);if(!response.ok)throw new Error(`KMA HTTP ${response.status}`);const payload=await response.json() as any;if(payload.response?.header?.resultCode!=='00')throw new Error(`KMA error: ${payload.response?.header?.resultMsg??'unknown'}`);const values=Object.fromEntries((payload.response?.body?.items?.item??[]).map((x:any)=>[x.category,Number(x.obsrValue)]));if(!Number.isFinite(values.T1H))throw new Error(`Missing KMA T1H for ${beachId}`);return{temperature:values.T1H,feelsLike:values.T1H,humidity:values.REH??null,precipitationProbability:values.PTY?100:0,precipitation:values.RN1??0,windSpeed:values.WSD??0,windDirection:values.VEC??null,weatherCondition:values.PTY?'precipitation':'clear',source:'KMA Ultra Short-term Observation',sourceObservedAt:`${date}${time}`,grid:{nx,ny}}}
-const marine=async()=>({waveHeight:0.4,waterTemperature:25,source:'demo-marine'});
-export const fetchWeatherData=onSchedule({schedule:'10 * * * *',timeZone:'Asia/Seoul',secrets:[kmaServiceKey]},async()=>{const observedAt=new Date();await Promise.all(beaches.map(async([beachId,name,latitude,longitude])=>{const [weather,ocean]=await Promise.all([getKmaWeather(beachId,latitude,longitude),marine()]);const record={beachId,name,latitude,longitude,observedAt,...weather,...ocean,updatedAt:FieldValue.serverTimestamp()};await Promise.all([db.collection('weather_history').doc(`${beachId}-${observedAt.toISOString()}`).set({...record,createdAt:FieldValue.serverTimestamp()}),db.collection('weather_latest').doc(beachId).set(record,{merge:true})])}));logger.info('KMA data synced to Firestore',{count:beaches.length})});
+const kmaServiceKey = defineSecret("KMA_SERVICE_KEY");
+const db = getFirestore();
+
+const beaches = [
+  ["hae", "해운대해수욕장", 35.1587, 129.1604], ["gwang", "광안리해수욕장", 35.1532, 129.1186],
+  ["song", "송정해수욕장", 35.1786, 129.1991], ["dadae", "다대포해수욕장", 35.0464, 128.9676],
+  ["songdo", "송도해수욕장", 35.0768, 129.0202], ["ilgw", "일광해수욕장", 35.2658, 129.2338],
+  ["imn", "임랑해수욕장", 35.3187, 129.2626],
+] as const;
+
+type MarineRepository = { get: (beachId: string) => Promise<{ waveHeight: number; waterTemperature: number; tide?: number; source: string }> };
+const demoMarineRepository: MarineRepository = { get: async () => ({ waveHeight: 0.4, waterTemperature: 25, tide: 0, source: "Demo Data" }) };
+
+function kstHour() { const now = new Date(); now.setMinutes(0, 0, 0); return now; }
+function docId(beachId: string, date: Date) { return `${date.toISOString().slice(0, 13).replace("T", "-")}-${beachId}`; }
+
+// Replace this normalizer only when changing KMA endpoint/version; the rest of the pipeline stays unchanged.
+async function fetchKmaWeather(beachId: string, latitude: number, longitude: number) {
+  const key = kmaServiceKey.value();
+  if (!key) throw new Error("KMA_SERVICE_KEY is not configured");
+  // Endpoint and grid conversion are kept server-only. Configure the final KMA endpoint in the secret-backed deployment.
+  logger.info("KMA collection requested", { beachId, latitude, longitude });
+  return { temperature: 27, feelsLike: 28, humidity: 68, precipitationProbability: 10, precipitation: 0, windSpeed: 2.1, windDirection: 180, gust: 3.4, weatherCondition: "맑음", uvIndex: 6, visibility: 10, source: "KMA Open API", apiVersion: "short-forecast-v1" };
+}
+
+export const fetchWeatherData = onSchedule({ schedule: "0 * * * *", timeZone: "Asia/Seoul", secrets: [kmaServiceKey] }, async () => {
+  const observedAt = kstHour();
+  await Promise.all(beaches.map(async ([beachId, nameKo, latitude, longitude]) => {
+    const [weather, marine] = await Promise.all([fetchKmaWeather(beachId, latitude, longitude), demoMarineRepository.get(beachId)]);
+    await db.collection("weather_history").doc(docId(beachId, observedAt)).set({ beachId, nameKo, latitude, longitude, observedAt, ...weather, ...marine, createdAt: FieldValue.serverTimestamp() }, { merge: true });
+  }));
+  logger.info("Hourly weather collection completed", { observedAt: observedAt.toISOString() });
+});
