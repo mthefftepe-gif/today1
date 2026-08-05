@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from "recharts";
 
 type Activity = "swimming" | "family" | "walking" | "surfing" | "photo" | "sunset" | "relaxation" | "petWalking";
