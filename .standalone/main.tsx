@@ -8,6 +8,7 @@ import "../app/score-polish.css";
 import "../app/realistic-map.css";
 import "../app/hero-beach-name.css";
 import HeroDynamicName from "../app/hero-dynamic-name";
+import SelectedBeachSync from "../app/selected-beach-sync";
 import "../app/hero-dynamic-name.css";
 import "../app/recommendation-copy.css";
 import "../app/leaflet-map.css";
@@ -18,4 +19,4 @@ import UniqueRankFix from "../app/unique-rank-fix";
 import PriorityBridge from "../app/priority-bridge";
 import "../app/priority-bridge.css";
 
-createRoot(document.getElementById("root")!).render(<><Home /><HeroDynamicName /><PriorityBridge /><LeafletMapBridge /><ScoreGuideBridge /><UniqueRankFix /><DataSources /><LiveWeatherRibbon /></>);
+createRoot(document.getElementById("root")!).render(<><Home /><HeroDynamicName /><SelectedBeachSync /><PriorityBridge /><LeafletMapBridge /><ScoreGuideBridge /><UniqueRankFix /><DataSources /><LiveWeatherRibbon /></>);
