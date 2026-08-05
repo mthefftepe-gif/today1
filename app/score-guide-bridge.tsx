@@ -96,8 +96,9 @@ export default function ScoreGuideBridge() {
 
   useEffect(() => {
     const readActivity = () => {
-      const next = document.querySelector<HTMLElement>(".activity-grid .chosen")?.innerText.replace("선택됨", "").trim() || "산책";
-      setActivity(current => current === next ? current : (rankings[next] ? next : "산책"));
+      const buttonText = document.querySelector<HTMLElement>(".activity-grid .chosen")?.textContent || "";
+      const next = Object.keys(rankings).find(name => buttonText.includes(name)) || "산책";
+      setActivity(current => current === next ? current : next);
     };
     readActivity();
     const timer = window.setInterval(readActivity, 300);
