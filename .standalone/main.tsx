@@ -1,5 +1,22 @@
-import { createRoot } from 'react-dom/client';
-import Home from '../app/page';
-import '../app/globals.css';
+import { createRoot } from "react-dom/client";
+import Home from "../app/page";
+import { DataSources } from "../app/data-sources";
+import LiveWeatherRibbon from "../app/live-weather-ribbon";
+import RecommendationWeatherSync from "../app/recommendation-weather-sync";
+import "../app/globals.css";
+import "../app/live-weather.css";
+import "../app/score-polish.css";
+import "../app/realistic-map.css";
+import "../app/hero-beach-name.css";
+import HeroDynamicName from "../app/hero-dynamic-name";
+import SelectedBeachSync from "../app/selected-beach-sync";
+import "../app/hero-dynamic-name.css";
+import "../app/recommendation-copy.css";
+import "../app/leaflet-map.css";
+import LeafletMapBridge from "../app/leaflet-map-bridge";
+import "../app/score-guide.css";
+import ScoreGuideBridge from "../app/score-guide-bridge";
+import PriorityBridge from "../app/priority-bridge";
+import "../app/priority-bridge.css";
 
-createRoot(document.getElementById('root')!).render(<Home />);
+createRoot(document.getElementById("root")!).render(<><Home /><HeroDynamicName /><SelectedBeachSync /><PriorityBridge /><LeafletMapBridge /><ScoreGuideBridge /><RecommendationWeatherSync /><DataSources /><LiveWeatherRibbon /></>);
