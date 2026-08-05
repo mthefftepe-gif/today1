@@ -12,9 +12,7 @@ import LeafletMapBridge from "../app/leaflet-map-bridge";
 import "../app/score-guide.css";
 import ScoreGuideBridge from "../app/score-guide-bridge";
 import UniqueRankFix from "../app/unique-rank-fix";
-import HeroRecommendationBridge from "../app/hero-recommendation-bridge";
-import "../app/hero-recommendation.css";
 import PriorityBridge from "../app/priority-bridge";
 import "../app/priority-bridge.css";
 
-createRoot(document.getElementById("root")!).render(<><Home /><HeroRecommendationBridge /><PriorityBridge /><LeafletMapBridge /><ScoreGuideBridge /><UniqueRankFix /><DataSources /><LiveWeatherRibbon /></>);
+createRoot(document.getElementById("root")!).render(<><Home /><PriorityBridge /><LeafletMapBridge /><ScoreGuideBridge /><UniqueRankFix /><DataSources /><LiveWeatherRibbon /></>);
