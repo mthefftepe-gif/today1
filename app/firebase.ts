@@ -1,17 +1,8 @@
-import { getApp, getApps, initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getApps, initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 
-// Firebase web configuration is public by design. Access is protected by
-// Firestore rules; private API keys live only in Cloud Functions secrets.
-const firebaseConfig = {
-  apiKey: "AIzaSyD-5TTrl-0X8OrJW1C_3VT_4_yZ6xyBeGU",
-  authDomain: "today1-72a13.firebaseapp.com",
-  projectId: "today1-72a13",
-  storageBucket: "today1-72a13.firebasestorage.app",
-  messagingSenderId: "583423259255",
-  appId: "1:583423259255:web:d4dcc6e3cd44347e730c72",
-  measurementId: "G-9ZZVFB6DEM",
-};
-
-export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
-export const db = getFirestore(firebaseApp);
+const required = ['VITE_FIREBASE_API_KEY','VITE_FIREBASE_AUTH_DOMAIN','VITE_FIREBASE_PROJECT_ID','VITE_FIREBASE_APP_ID'] as const;
+const missing = required.filter((key) => !import.meta.env[key]);
+if (missing.length) throw new Error(`Firebase configuration is missing: ${missing.join(', ')}`);
+const app = getApps()[0] ?? initializeApp({apiKey:import.meta.env.VITE_FIREBASE_API_KEY,authDomain:import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,projectId:import.meta.env.VITE_FIREBASE_PROJECT_ID,storageBucket:import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,messagingSenderId:import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,appId:import.meta.env.VITE_FIREBASE_APP_ID});
+export const db = getFirestore(app);
